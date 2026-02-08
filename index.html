@@ -6604,5 +6604,242 @@
             showAlert('Reporte Excel generado exitosamente', 'success');
         }
     </script>
+    <script>
+// ===== FUNCIÓN PARA QUITAR BOTÓN "VOLVER AL ADMIN" =====
+function quitarBotonVolverAdmin() {
+    // Buscar y eliminar el botón "Volver al Admin" de todas las interfaces
+    const botonesVolver = document.querySelectorAll('#volver-admin-btn');
+    
+    botonesVolver.forEach(boton => {
+        boton.remove();
+    });
+    
+    // También eliminar cualquier botón similar que pueda tener diferentes IDs
+    const botonesSimilares = document.querySelectorAll('[id*="volver"], [id*="regresar"]');
+    botonesSimilares.forEach(boton => {
+        if (boton.textContent.includes('Volver') || boton.textContent.includes('Regresar')) {
+            boton.remove();
+        }
+    });
+}
+
+// ===== MODIFICAR LA FUNCIÓN accederInterfaz =====
+// Reemplazar la función original accederInterfaz con esta versión modificada
+function accederInterfazOriginal(tipo) {
+    // Buscar un usuario del tipo especificado
+    const usuario = datosSistema.usuarios.find(u => 
+        u.rol === tipo && u.estado === 'activo'
+    );
+
+    if (usuario) {
+        // Asegurar que NO haya botón de volver al admin
+        quitarBotonVolverAdmin();
+        
+        // Ocultar admin dashboard
+        document.getElementById('admin-dashboard').classList.add('hidden');
+        
+        // Mostrar dashboard del usuario
+        currentUser = usuario;
+        currentRole = tipo;
+        mostrarDashboard(tipo, usuario);
+        
+        showAlert(`Accediendo como ${tipo}`, 'info');
+    } else {
+        showAlert(`No hay usuarios ${tipo} activos disponibles`, 'warning');
+    }
+}
+
+// ===== MODIFICAR LA FUNCIÓN accederInterfazPlantel =====
+function accederInterfazPlantelOriginal(plantelId) {
+    const plantel = datosSistema.planteles.find(p => p.id === plantelId);
+    if (!plantel) {
+        showAlert('Plantel no encontrado', 'error');
+        return;
+    }
+
+    const usuarioPlantel = datosSistema.usuarios.find(u => 
+        u.rol === 'plantel' && u.entidadId === plantelId
+    );
+
+    if (!usuarioPlantel) {
+        showAlert('No hay usuario asignado a este plantel', 'error');
+        return;
+    }
+
+    // Asegurar que NO haya botón de volver al admin
+    quitarBotonVolverAdmin();
+    
+    // Ocultar admin dashboard
+    document.getElementById('admin-dashboard').classList.add('hidden');
+    
+    // Mostrar dashboard del plantel
+    currentUser = usuarioPlantel;
+    currentRole = 'plantel';
+    mostrarDashboard('plantel', usuarioPlantel);
+    
+    showAlert(`Accediendo al plantel ${plantel.nombre}`, 'info');
+}
+
+// ===== REEMPLAZAR LAS FUNCIONES ORIGINALES =====
+// Guardar referencia a las funciones originales (si existen)
+const accederInterfazOriginalRef = window.accederInterfaz;
+const accederInterfazPlantelOriginalRef = window.accederInterfazPlantel;
+
+// Sobrescribir las funciones con las nuevas versiones
+window.accederInterfaz = function(tipo) {
+    accederInterfazOriginal(tipo);
+};
+
+window.accederInterfazPlantel = function(plantelId) {
+    accederInterfazPlantelOriginal(plantelId);
+};
+
+// ===== AGREGAR FUNCIONALIDAD AL LOGOUT =====
+// Modificar la función logout para limpiar cualquier botón residual
+function logoutOriginal() {
+    // Limpiar botones "Volver al Admin" antes de cerrar sesión
+    quitarBotonVolverAdmin();
+    
+    // Limpiar usuario actual
+    currentUser = null;
+    currentRole = null;
+
+    // Detener intervalo de sincronización
+    if (intervaloSincronizacion) {
+        clearInterval(intervaloSincronizacion);
+        intervaloSincronizacion = null;
+    }
+
+    // Ocultar todos los dashboards
+    document.querySelectorAll('.dashboard-container').forEach(dash => {
+        dash.classList.add('hidden');
+    });
+
+    // Mostrar login
+    document.getElementById('login-container').classList.remove('hidden');
+
+    // Limpiar formulario de login
+    document.getElementById('login-form').reset();
+
+    showAlert('Sesión cerrada exitosamente', 'success');
+}
+
+// Sobrescribir la función logout original
+window.logout = logoutOriginal;
+
+// ===== PREVENIR CREACIÓN DE BOTONES EN mostrarDashboard =====
+// Modificar la función mostrarDashboard para prevenir creación de botones
+function mostrarDashboardOriginal(role, usuario) {
+    // Ocultar login
+    document.getElementById('login-container').classList.add('hidden');
+
+    // Mostrar dashboard correspondiente
+    const dashboardId = `${role}-dashboard`;
+    document.getElementById(dashboardId).classList.remove('hidden');
+
+    // Configurar interfaz
+    configurarInterfaz(role, usuario);
+
+    // Asegurar que NO haya botones "Volver al Admin"
+    quitarBotonVolverAdmin();
+    
+    // Iniciar sincronización automática
+    iniciarSincronizacionAutomatica();
+}
+
+// Sobrescribir la función mostrarDashboard
+window.mostrarDashboard = mostrarDashboardOriginal;
+
+// ===== AGREGAR DETECCIÓN DE CAMBIOS DE ROL =====
+// Monitorear cambios en currentRole para limpiar botones
+let currentRoleObserver = null;
+
+function iniciarObservadorRol() {
+    // Crear un proxy para monitorear cambios en currentRole
+    currentRoleObserver = new Proxy({ role: currentRole }, {
+        set: function(target, property, value) {
+            if (property === 'role' && value !== 'admin') {
+                // Si el rol cambia a algo que no sea admin, limpiar botones
+                setTimeout(quitarBotonVolverAdmin, 100);
+            }
+            target[property] = value;
+            return true;
+        }
+    });
+}
+
+// ===== EJECUTAR AL CARGAR LA PÁGINA =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Iniciar observador de rol
+    iniciarObservadorRol();
+    
+    // Limpiar cualquier botón residual que pueda existir
+    setTimeout(quitarBotonVolverAdmin, 500);
+    
+    // Sobrescribir también los botones en el DOMContentLoaded del script principal
+    const originalDOMContentLoaded = window.onload || function() {};
+    window.onload = function() {
+        originalDOMContentLoaded();
+        quitarBotonVolverAdmin();
+    };
+});
+
+// ===== FUNCIÓN PARA VERIFICAR INTERFACES LIMPIAS =====
+function verificarInterfacesLimpias() {
+    const dashboardsNoAdmin = [
+        'plantel-dashboard',
+        'director-dashboard', 
+        'docente-dashboard',
+        'participante-dashboard'
+    ];
+    
+    dashboardsNoAdmin.forEach(dashboardId => {
+        const dashboard = document.getElementById(dashboardId);
+        if (dashboard && !dashboard.classList.contains('hidden')) {
+            // Esta interfaz está visible, verificar que no tenga botones de volver
+            const botonesVolver = dashboard.querySelectorAll('[id*="volver"], [id*="regresar"]');
+            botonesVolver.forEach(boton => {
+                if (boton.textContent.includes('Volver') || boton.textContent.includes('Regresar')) {
+                    console.warn(`Botón no permitido encontrado en ${dashboardId}:`, boton);
+                    boton.remove();
+                }
+            });
+        }
+    });
+}
+
+// Ejecutar verificación periódicamente
+setInterval(verificarInterfacesLimpias, 30000); // Cada 30 segundos
+
+// ===== AGREGAR ESTILOS PARA OCULTAR BOTONES =====
+const estiloOcultarBotones = document.createElement('style');
+estiloOcultarBotones.textContent = `
+    /* Ocultar cualquier botón que diga "Volver al Admin" */
+    #volver-admin-btn,
+    button[id*="volver"],
+    button[id*="regresar"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+    }
+    
+    /* Ocultar también enlaces con texto similar */
+    a[id*="volver"],
+    a[id*="regresar"] {
+        display: none !important;
+    }
+    
+    /* Asegurar que los header-right no tengan espacio extra */
+    .header-right:has(#volver-admin-btn) {
+        gap: 1rem !important;
+    }
+`;
+document.head.appendChild(estiloOcultarBotones);
+</script>
 </body>
 </html>
