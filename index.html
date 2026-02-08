@@ -6841,5 +6841,1300 @@ estiloOcultarBotones.textContent = `
 `;
 document.head.appendChild(estiloOcultarBotones);
 </script>
+    <!-- Agrega esto JUSTO ANTES del cierre </body> -->
+
+<script>
+// ===== CONFIGURACIÓN DE PÁGINA DE BIENVENIDA =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si es la primera vez que se carga el sistema
+    const sistemaConfigurado = localStorage.getItem('sistemaConfigurado');
+    
+    if (!sistemaConfigurado) {
+        // Crear página de bienvenida/landing page
+        crearPaginaBienvenida();
+    } else {
+        // El sistema ya está configurado, cargar normalmente
+        cargarDatos();
+        inicializarEventos();
+        configurarModoConexion();
+        cargarTemaGuardado();
+    }
+});
+
+function crearPaginaBienvenida() {
+    // Ocultar el login actual
+    document.getElementById('login-container').style.display = 'none';
+    
+    // Crear contenedor de bienvenida
+    const welcomeContainer = document.createElement('div');
+    welcomeContainer.id = 'welcome-container';
+    welcomeContainer.style.cssText = `
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1a1a1a, #2c3e50);
+        padding: 20px;
+    `;
+    
+    // Crear tarjeta de bienvenida
+    const welcomeCard = document.createElement('div');
+    welcomeCard.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 800px;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    `;
+    
+    // Contenido de la tarjeta de bienvenida
+    welcomeCard.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; padding: 3rem; text-align: center;">
+            <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 3rem; border: 3px solid rgba(255,255,255,0.3);">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Complejo Virtual EPE</h1>
+            <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; display: inline-block; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                <i class="fas fa-cogs"></i> SISTEMA CRM EDUCATIVO 4.0
+            </div>
+            <p style="opacity: 0.9; max-width: 600px; margin: 0 auto;">Sistema integral de gestión educativa para planteles, directores, docentes y participantes</p>
+        </div>
+        
+        <div style="padding: 2.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: #f8f9fa;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Gestión de Planteles</h3>
+                    <p style="color: #666;">Administre múltiples planteles educativos</p>
+                </div>
+                
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: #f8f9fa;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Panel Docente</h3>
+                    <p style="color: #666;">Gestión completa de formaciones y participantes</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <h3 style="margin-bottom: 1.5rem; color: #2c3e50;">¿Cómo desea continuar?</h3>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;">
+                    <button id="btn-login-existing" style="padding: 12px 30px; background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                    </button>
+                    
+                    <button id="btn-create-account" style="padding: 12px 30px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-user-plus"></i> Crear Cuenta
+                    </button>
+                </div>
+                
+                <div id="create-account-options" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; animation: fadeIn 0.5s;">
+                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">Seleccione el tipo de cuenta:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <button class="btn-account-type" data-type="admin" style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                            <div style="font-size: 1.2rem; color: #1a1a1a; margin-bottom: 0.5rem;">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div style="font-weight: 600; color: #1a1a1a;">Administrador</div>
+                            <small style="color: #666; display: block; margin-top: 0.5rem;">Acceso completo al sistema</small>
+                        </button>
+                        
+                        <button class="btn-account-type" data-type="plantel" style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                            <div style="font-size: 1.2rem; color: #1a1a1a; margin-bottom: 0.5rem;">
+                                <i class="fas fa-school"></i>
+                            </div>
+                            <div style="font-weight: 600; color: #1a1a1a;">Plantel</div>
+                            <small style="color: #666; display: block; margin-top: 0.5rem;">Gestión de un plantel educativo</small>
+                        </button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <button class="btn-account-type" data-type="director" style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                            <div style="font-size: 1.2rem; color: #1a1a1a; margin-bottom: 0.5rem;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div style="font-weight: 600; color: #1a1a1a;">Director</div>
+                        </button>
+                        
+                        <button class="btn-account-type" data-type="docente" style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                            <div style="font-size: 1.2rem; color: #1a1a1a; margin-bottom: 0.5rem;">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <div style="font-weight: 600; color: #1a1a1a;">Docente</div>
+                        </button>
+                        
+                        <button class="btn-account-type" data-type="participante" style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                            <div style="font-size: 1.2rem; color: #1a1a1a; margin-bottom: 0.5rem;">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div style="font-weight: 600; color: #1a1a1a;">Participante</div>
+                        </button>
+                    </div>
+                    
+                    <div id="account-type-details" style="display: none; margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 8px; border: 1px solid #ddd;">
+                        <form id="form-create-account">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Nombre Completo *</label>
+                                    <input type="text" id="new-account-name" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Email *</label>
+                                    <input type="email" id="new-account-email" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Usuario *</label>
+                                    <input type="text" id="new-account-username" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Contraseña *</label>
+                                    <input type="password" id="new-account-password" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                                </div>
+                            </div>
+                            
+                            <div id="extra-fields" style="margin-bottom: 1.5rem;">
+                                <!-- Campos adicionales según el tipo de cuenta -->
+                            </div>
+                            
+                            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                                <button type="button" id="btn-cancel-create" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                                <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 6px; cursor: pointer;">Crear Cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                    <p style="color: #666; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Si ya tiene una cuenta, seleccione "Iniciar Sesión"
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1rem; text-align: center; border-top: 1px solid #eee;">
+            <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                <i class="fas fa-shield-alt"></i> Sistema Seguro | Versión 4.0.0 | © 2024 Complejo Virtual EPE
+            </p>
+        </div>
+    `;
+    
+    welcomeCard.appendChild(welcomeCard);
+    document.body.appendChild(welcomeContainer);
+    
+    // Eventos para los botones de la página de bienvenida
+    document.getElementById('btn-login-existing').addEventListener('click', function() {
+        // Ocultar bienvenida y mostrar login
+        welcomeContainer.remove();
+        document.getElementById('login-container').style.display = 'flex';
+        
+        // Marcar sistema como configurado
+        localStorage.setItem('sistemaConfigurado', 'true');
+    });
+    
+    document.getElementById('btn-create-account').addEventListener('click', function() {
+        const optionsDiv = document.getElementById('create-account-options');
+        optionsDiv.style.display = 'block';
+        this.style.display = 'none';
+        document.getElementById('btn-login-existing').style.display = 'none';
+    });
+    
+    document.getElementById('btn-cancel-create').addEventListener('click', function() {
+        document.getElementById('create-account-options').style.display = 'none';
+        document.getElementById('btn-create-account').style.display = 'inline-flex';
+        document.getElementById('btn-login-existing').style.display = 'inline-flex';
+        document.getElementById('account-type-details').style.display = 'none';
+    });
+    
+    // Eventos para selección de tipo de cuenta
+    document.querySelectorAll('.btn-account-type').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remover selección anterior
+            document.querySelectorAll('.btn-account-type').forEach(b => {
+                b.style.borderColor = '#ddd';
+                b.style.background = 'white';
+            });
+            
+            // Marcar como seleccionado
+            this.style.borderColor = '#3498db';
+            this.style.background = '#f0f7ff';
+            
+            const accountType = this.dataset.type;
+            mostrarFormularioCreacionCuenta(accountType);
+        });
+    });
+    
+    // Evento para enviar formulario de creación de cuenta
+    document.getElementById('form-create-account').addEventListener('submit', function(e) {
+        e.preventDefault();
+        crearNuevaCuenta();
+    });
+}
+
+function mostrarFormularioCreacionCuenta(tipo) {
+    const detailsDiv = document.getElementById('account-type-details');
+    const extraFieldsDiv = document.getElementById('extra-fields');
+    
+    // Mostrar detalles
+    detailsDiv.style.display = 'block';
+    
+    // Limpiar campos adicionales
+    extraFieldsDiv.innerHTML = '';
+    
+    // Configurar campos según el tipo de cuenta
+    switch(tipo) {
+        case 'admin':
+            extraFieldsDiv.innerHTML = `
+                <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #ffeaa7;">
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        La cuenta de administrador tiene acceso completo al sistema. Solo cree esta cuenta si es el administrador principal.
+                    </p>
+                </div>
+            `;
+            break;
+            
+        case 'plantel':
+            extraFieldsDiv.innerHTML = `
+                <h4 style="color: #2c3e50; margin-bottom: 1rem;">Datos del Plantel</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Nombre del Plantel *</label>
+                        <input type="text" id="plantel-nombre" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Código Dependencia *</label>
+                        <input type="text" id="plantel-codigo" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Ciudad *</label>
+                        <input type="text" id="plantel-ciudad" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Teléfono</label>
+                        <input type="tel" id="plantel-telefono" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'director':
+        case 'docente':
+        case 'participante':
+            let label = tipo === 'director' ? 'Director' : tipo === 'docente' ? 'Docente' : 'Participante';
+            
+            extraFieldsDiv.innerHTML = `
+                <h4 style="color: #2c3e50; margin-bottom: 1rem;">Datos de ${label}</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Cédula *</label>
+                        <input type="text" id="${tipo}-cedula" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Teléfono *</label>
+                        <input type="tel" id="${tipo}-telefono" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Plantel *</label>
+                    <select id="${tipo}-plantel" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                        <option value="">Seleccione un plantel</option>
+                    </select>
+                </div>
+            `;
+            
+            // Cargar planteles en el select (simulado)
+            setTimeout(() => {
+                const select = document.getElementById(`${tipo}-plantel`);
+                select.innerHTML = '<option value="">Seleccione un plantel</option>';
+                
+                // Planteles de ejemplo
+                const plantelesEjemplo = [
+                    { id: 'plantel-1', nombre: 'Complejo Virtual EPE Principal' },
+                    { id: 'plantel-2', nombre: 'Sede Norte' },
+                    { id: 'plantel-3', nombre: 'Sede Sur' }
+                ];
+                
+                plantelesEjemplo.forEach(plantel => {
+                    const option = document.createElement('option');
+                    option.value = plantel.id;
+                    option.textContent = plantel.nombre;
+                    select.appendChild(option);
+                });
+            }, 100);
+            break;
+    }
+}
+
+function crearNuevaCuenta() {
+    const name = document.getElementById('new-account-name').value;
+    const email = document.getElementById('new-account-email').value;
+    const username = document.getElementById('new-account-username').value;
+    const password = document.getElementById('new-account-password').value;
+    
+    // Determinar tipo de cuenta seleccionado
+    const tipoBtn = document.querySelector('.btn-account-type[style*="border-color: rgb(52, 152, 219)"]');
+    const tipo = tipoBtn ? tipoBtn.dataset.type : 'participante';
+    
+    // Crear datos iniciales del sistema
+    datosSistema = {
+        planteles: [],
+        directores: [],
+        docentes: [],
+        participantes: [],
+        formaciones: [],
+        usuarios: [],
+        configuracion: {
+            intervaloSincronizacion: 5,
+            frecuenciaBackup: 'diario',
+            modoConexion: 'online',
+            tema: 'theme-1'
+        }
+    };
+    
+    // Crear usuario según el tipo
+    const usuarioId = generarCodigoUnico();
+    
+    switch(tipo) {
+        case 'admin':
+            // Crear usuario administrador
+            datosSistema.usuarios.push({
+                id: usuarioId,
+                username: username,
+                password: password,
+                email: email,
+                nombre: name,
+                rol: 'admin',
+                entidadId: null,
+                estado: 'activo',
+                ultimoAcceso: null
+            });
+            break;
+            
+        case 'plantel':
+            // Crear plantel primero
+            const plantelId = generarCodigoUnico();
+            const plantelNombre = document.getElementById('plantel-nombre').value;
+            const plantelCodigo = document.getElementById('plantel-codigo').value;
+            const plantelCiudad = document.getElementById('plantel-ciudad').value;
+            const plantelTelefono = document.getElementById('plantel-telefono').value;
+            
+            datosSistema.planteles.push({
+                id: plantelId,
+                codigoDependencia: plantelCodigo,
+                codigoPlantel: 'PVE-' + plantelCodigo,
+                nombre: plantelNombre,
+                direccion: 'Dirección pendiente',
+                ciudad: plantelCiudad,
+                telefono: plantelTelefono,
+                email: email,
+                estado: 'activo'
+            });
+            
+            // Crear usuario del plantel
+            datosSistema.usuarios.push({
+                id: usuarioId,
+                username: username,
+                password: password,
+                email: email,
+                nombre: plantelNombre,
+                rol: 'plantel',
+                entidadId: plantelId,
+                estado: 'activo',
+                ultimoAcceso: null
+            });
+            break;
+            
+        case 'director':
+        case 'docente':
+        case 'participante':
+            const cedula = document.getElementById(`${tipo}-cedula`).value;
+            const telefono = document.getElementById(`${tipo}-telefono`).value;
+            const plantelSeleccionado = document.getElementById(`${tipo}-plantel`).value;
+            
+            // Crear entidad según el tipo
+            const entidadId = generarCodigoUnico();
+            const rolCapitalizado = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+            
+            if (tipo === 'director') {
+                datosSistema.directores.push({
+                    id: entidadId,
+                    cedula: cedula,
+                    nombres: name.split(' ')[0],
+                    apellidos: name.split(' ').slice(1).join(' '),
+                    telefono: telefono,
+                    email: email,
+                    plantelId: plantelSeleccionado,
+                    estado: 'activo'
+                });
+            } else if (tipo === 'docente') {
+                datosSistema.docentes.push({
+                    id: entidadId,
+                    cedula: cedula,
+                    nombres: name.split(' ')[0],
+                    apellidos: name.split(' ').slice(1).join(' '),
+                    especialidad: 'Especialidad pendiente',
+                    telefono: telefono,
+                    email: email,
+                    plantelId: plantelSeleccionado,
+                    estado: 'activo'
+                });
+            } else {
+                datosSistema.participantes.push({
+                    id: entidadId,
+                    cedula: cedula,
+                    nombres: name.split(' ')[0],
+                    apellidos: name.split(' ').slice(1).join(' '),
+                    telefono: telefono,
+                    email: email,
+                    edad: 25,
+                    sexo: 'masculino',
+                    fechaNacimiento: '1990-01-01',
+                    lugarNacimiento: 'Ciudad pendiente',
+                    parroquia: 'Parroquia pendiente',
+                    direccion: 'Dirección pendiente',
+                    discapacidad: 'no',
+                    discapacidadDetalle: '',
+                    plantelId: plantelSeleccionado,
+                    docenteId: null,
+                    formacionesIds: [],
+                    estado: 'activo'
+                });
+            }
+            
+            // Crear usuario
+            datosSistema.usuarios.push({
+                id: usuarioId,
+                username: username,
+                password: password,
+                email: email,
+                nombre: name,
+                rol: tipo,
+                entidadId: entidadId,
+                estado: 'activo',
+                ultimoAcceso: null
+            });
+            break;
+    }
+    
+    // Guardar datos y marcar sistema como configurado
+    guardarDatos();
+    localStorage.setItem('sistemaConfigurado', 'true');
+    
+    // Ocultar bienvenida y mostrar login
+    document.getElementById('welcome-container').remove();
+    document.getElementById('login-container').style.display = 'flex';
+    
+    // Llenar automáticamente el login con los datos creados
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = password;
+    
+    showAlert('¡Cuenta creada exitosamente! Ahora puede iniciar sesión.', 'success');
+}
+
+// ===== FUNCIONALIDADES PARA DOCENTES =====
+
+// Modificar el dashboard del docente para agregar nuevas funciones
+function modificarDashboardDocente() {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId || currentRole !== 'docente') return;
+    
+    // Verificar si ya se agregaron los nuevos elementos
+    const seccionFormaciones = document.getElementById('section-formaciones-docente');
+    const seccionParticipantes = document.getElementById('section-participantes-docente');
+    
+    if (seccionFormaciones && !seccionFormaciones.querySelector('#btn-nueva-formacion')) {
+        // Agregar botón para nueva formación
+        const cardHeader = seccionFormaciones.querySelector('.card-header');
+        if (cardHeader) {
+            const btnNuevaFormacion = document.createElement('button');
+            btnNuevaFormacion.id = 'btn-nueva-formacion';
+            btnNuevaFormacion.className = 'btn btn-primary';
+            btnNuevaFormacion.innerHTML = '<i class="fas fa-plus"></i> Nueva Formación';
+            btnNuevaFormacion.onclick = function() {
+                abrirModalFormacionDocente();
+            };
+            cardHeader.appendChild(btnNuevaFormacion);
+        }
+    }
+    
+    if (seccionParticipantes && !seccionParticipantes.querySelector('#btn-agregar-participante')) {
+        // Agregar botón para agregar participante por cédula
+        const cardHeader = seccionParticipantes.querySelector('.card-header');
+        if (cardHeader) {
+            const btnAgregarParticipante = document.createElement('button');
+            btnAgregarParticipante.id = 'btn-agregar-participante';
+            btnAgregarParticipante.className = 'btn btn-primary';
+            btnAgregarParticipante.innerHTML = '<i class="fas fa-user-plus"></i> Agregar por Cédula';
+            btnAgregarParticipante.onclick = function() {
+                abrirModalBuscarParticipante();
+            };
+            cardHeader.appendChild(btnAgregarParticipante);
+        }
+    }
+}
+
+// Modal para nueva formación (específico para docentes)
+function abrirModalFormacionDocente() {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    const docente = datosSistema.docentes.find(d => d.id === docenteId);
+    if (!docente) return;
+    
+    // Crear modal específico para docentes
+    const modalId = 'modal-formacion-docente';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Nueva Formación</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-formacion-docente">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Código *</label>
+                                <input type="text" id="formacion-docente-codigo" class="form-control" required 
+                                       placeholder="Ej: FOR-001">
+                            </div>
+                            <div class="form-group">
+                                <label>Nombre *</label>
+                                <input type="text" id="formacion-docente-nombre" class="form-control" required 
+                                       placeholder="Ej: Introducción a la Programación">
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción</label>
+                                <textarea id="formacion-docente-descripcion" class="form-control" rows="3"
+                                          placeholder="Describa el contenido de la formación..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Duración (horas) *</label>
+                                <input type="number" id="formacion-docente-duracion" class="form-control" required min="1" value="20">
+                            </div>
+                            <div class="form-group">
+                                <label>Modalidad *</label>
+                                <select id="formacion-docente-modalidad" class="form-control" required>
+                                    <option value="">Seleccionar</option>
+                                    <option value="presencial">Presencial</option>
+                                    <option value="virtual" selected>Virtual</option>
+                                    <option value="mixta">Mixta</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Plantel</label>
+                                <input type="text" class="form-control" value="${datosSistema.planteles.find(p => p.id === docente.plantelId)?.nombre || 'No asignado'}" readonly>
+                                <input type="hidden" id="formacion-docente-plantel" value="${docente.plantelId}">
+                            </div>
+                            <div class="form-group">
+                                <label>Docente</label>
+                                <input type="text" class="form-control" value="${docente.nombres} ${docente.apellidos}" readonly>
+                                <input type="hidden" id="formacion-docente-docente" value="${docenteId}">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha Inicio *</label>
+                                <input type="date" id="formacion-docente-fecha-inicio" class="form-control" required
+                                       value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha Fin *</label>
+                                <input type="date" id="formacion-docente-fecha-fin" class="form-control" required
+                                       value="${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
+                            </div>
+                            <div class="form-group">
+                                <label>Vacantes *</label>
+                                <input type="number" id="formacion-docente-vacantes" class="form-control" required min="1" value="25">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('${modalId}')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="guardarFormacionDocente()">Guardar Formación</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Abrir modal
+    modal.classList.add('active');
+}
+
+function guardarFormacionDocente() {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    const docente = datosSistema.docentes.find(d => d.id === docenteId);
+    if (!docente) return;
+    
+    const formacion = {
+        id: generarCodigoUnico(),
+        codigo: document.getElementById('formacion-docente-codigo').value,
+        nombre: document.getElementById('formacion-docente-nombre').value,
+        descripcion: document.getElementById('formacion-docente-descripcion').value,
+        duracion: parseInt(document.getElementById('formacion-docente-duracion').value),
+        modalidad: document.getElementById('formacion-docente-modalidad').value,
+        docenteId: docenteId,
+        plantelId: docente.plantelId,
+        fechaInicio: document.getElementById('formacion-docente-fecha-inicio').value,
+        fechaFin: document.getElementById('formacion-docente-fecha-fin').value,
+        vacantes: parseInt(document.getElementById('formacion-docente-vacantes').value),
+        estado: 'activa'
+    };
+
+    // Validaciones
+    if (!formacion.codigo || !formacion.nombre || !formacion.duracion || !formacion.modalidad) {
+        showAlert('Por favor, complete todos los campos obligatorios', 'error');
+        return;
+    }
+    
+    if (new Date(formacion.fechaFin) <= new Date(formacion.fechaInicio)) {
+        showAlert('La fecha fin debe ser posterior a la fecha inicio', 'error');
+        return;
+    }
+
+    datosSistema.formaciones.push(formacion);
+    guardarDatos();
+    closeModal('modal-formacion-docente');
+    
+    // Actualizar la vista del docente
+    if (currentRole === 'docente') {
+        cargarSeccionDocente('formaciones-docente');
+    }
+    
+    showAlert('Formación creada exitosamente', 'success');
+}
+
+// Modal para buscar participante por cédula
+function abrirModalBuscarParticipante() {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    const modalId = 'modal-buscar-participante';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>Agregar Participante por Cédula</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Buscar por Cédula *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="buscar-cedula" class="form-control" 
+                                   placeholder="Ej: V-12345678" onkeyup="buscarParticipantePorCedula()">
+                            <button class="btn btn-info" onclick="buscarParticipantePorCedula()">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="resultado-busqueda" class="mb-3" style="display: none;">
+                        <h4>Resultado de búsqueda:</h4>
+                        <div id="info-participante-encontrado" class="card p-3 mb-3"></div>
+                        
+                        <div class="form-group">
+                            <label>Seleccionar Formación *</label>
+                            <select id="formacion-agregar-participante" class="form-control">
+                                <option value="">Seleccionar formación</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="sin-resultados" class="alert alert-warning" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i> No se encontró ningún participante con esa cédula
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('${modalId}')">Cancelar</button>
+                    <button class="btn btn-primary" id="btn-agregar-a-formacion" 
+                            onclick="agregarParticipanteAFormacion()" disabled>
+                        <i class="fas fa-user-plus"></i> Agregar a Formación
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Limpiar búsqueda anterior
+    document.getElementById('buscar-cedula').value = '';
+    document.getElementById('resultado-busqueda').style.display = 'none';
+    document.getElementById('sin-resultados').style.display = 'none';
+    document.getElementById('btn-agregar-a-formacion').disabled = true;
+    
+    // Cargar formaciones del docente
+    cargarFormacionesDocenteSelect();
+    
+    // Abrir modal
+    modal.classList.add('active');
+}
+
+function buscarParticipantePorCedula() {
+    const cedula = document.getElementById('buscar-cedula').value.trim();
+    if (!cedula) {
+        showAlert('Ingrese una cédula para buscar', 'warning');
+        return;
+    }
+    
+    // Buscar participante por cédula
+    const participante = datosSistema.participantes.find(p => 
+        p.cedula.toLowerCase() === cedula.toLowerCase()
+    );
+    
+    const resultadoDiv = document.getElementById('resultado-busqueda');
+    const sinResultadosDiv = document.getElementById('sin-resultados');
+    const btnAgregar = document.getElementById('btn-agregar-a-formacion');
+    
+    if (participante) {
+        // Mostrar información del participante encontrado
+        const plantel = datosSistema.planteles.find(p => p.id === participante.plantelId);
+        const formacionesActuales = (participante.formacionesIds || []).map(id => {
+            const formacion = datosSistema.formaciones.find(f => f.id === id);
+            return formacion ? formacion.nombre : '';
+        }).filter(nombre => nombre).join(', ') || 'Ninguna';
+        
+        document.getElementById('info-participante-encontrado').innerHTML = `
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" class="form-control" value="${participante.nombres} ${participante.apellidos}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Cédula:</label>
+                    <input type="text" class="form-control" value="${participante.cedula}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="text" class="form-control" value="${participante.email}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Plantel:</label>
+                    <input type="text" class="form-control" value="${plantel ? plantel.nombre : 'No asignado'}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Formaciones actuales:</label>
+                    <input type="text" class="form-control" value="${formacionesActuales}" readonly>
+                </div>
+            </div>
+            <input type="hidden" id="participante-id-encontrado" value="${participante.id}">
+        `;
+        
+        resultadoDiv.style.display = 'block';
+        sinResultadosDiv.style.display = 'none';
+        btnAgregar.disabled = false;
+    } else {
+        resultadoDiv.style.display = 'none';
+        sinResultadosDiv.style.display = 'block';
+        btnAgregar.disabled = true;
+    }
+}
+
+function cargarFormacionesDocenteSelect() {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    const select = document.getElementById('formacion-agregar-participante');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Seleccionar formación</option>';
+    
+    // Obtener formaciones del docente con vacantes disponibles
+    const formacionesDocente = datosSistema.formaciones.filter(f => 
+        f.docenteId === docenteId && 
+        f.vacantes > 0 &&
+        f.estado === 'activa'
+    );
+    
+    if (formacionesDocente.length === 0) {
+        select.innerHTML = '<option value="">No hay formaciones con vacantes disponibles</option>';
+        return;
+    }
+    
+    formacionesDocente.forEach(formacion => {
+        const option = document.createElement('option');
+        option.value = formacion.id;
+        option.textContent = `${formacion.codigo} - ${formacion.nombre} (${formacion.vacantes} vacantes)`;
+        select.appendChild(option);
+    });
+}
+
+function agregarParticipanteAFormacion() {
+    const participanteId = document.getElementById('participante-id-encontrado').value;
+    const formacionId = document.getElementById('formacion-agregar-participante').value;
+    
+    if (!participanteId || !formacionId) {
+        showAlert('Seleccione una formación para agregar al participante', 'error');
+        return;
+    }
+    
+    const participanteIndex = datosSistema.participantes.findIndex(p => p.id === participanteId);
+    if (participanteIndex === -1) return;
+    
+    const formacion = datosSistema.formaciones.find(f => f.id === formacionId);
+    if (!formacion || formacion.vacantes <= 0) {
+        showAlert('No hay vacantes disponibles en esta formación', 'error');
+        return;
+    }
+    
+    // Verificar que no esté ya inscrito
+    const formacionesIds = datosSistema.participantes[participanteIndex].formacionesIds || [];
+    if (formacionesIds.includes(formacionId)) {
+        showAlert('El participante ya está inscrito en esta formación', 'warning');
+        return;
+    }
+    
+    // Agregar formación
+    formacionesIds.push(formacionId);
+    datosSistema.participantes[participanteIndex].formacionesIds = formacionesIds;
+    
+    // Reducir vacantes
+    const formacionIndex = datosSistema.formaciones.findIndex(f => f.id === formacionId);
+    datosSistema.formaciones[formacionIndex].vacantes -= 1;
+    
+    // Actualizar docente del participante si no tiene
+    if (!datosSistema.participantes[participanteIndex].docenteId) {
+        datosSistema.participantes[participanteIndex].docenteId = currentUser.entidadId;
+    }
+    
+    guardarDatos();
+    closeModal('modal-buscar-participante');
+    
+    // Actualizar la vista del docente
+    if (currentRole === 'docente') {
+        cargarSeccionDocente('participantes-docente');
+    }
+    
+    showAlert('Participante agregado a la formación exitosamente', 'success');
+}
+
+// ===== MODIFICAR LA FUNCIÓN cargarSeccionDocente =====
+const cargarSeccionDocenteOriginal = window.cargarSeccionDocente;
+window.cargarSeccionDocente = function(sectionId) {
+    // Llamar a la función original
+    if (cargarSeccionDocenteOriginal) {
+        cargarSeccionDocenteOriginal(sectionId);
+    }
+    
+    // Agregar funcionalidades adicionales para docentes
+    if (currentRole === 'docente') {
+        modificarDashboardDocente();
+    }
+    
+    // Cargar funcionalidades específicas
+    switch(sectionId) {
+        case 'formaciones-docente':
+            cargarFormacionesDocenteConFuncionalidades();
+            break;
+        case 'participantes-docente':
+            cargarParticipantesDocenteConFuncionalidades();
+            break;
+    }
+};
+
+function cargarFormacionesDocenteConFuncionalidades() {
+    // Esta función se ejecuta cuando se carga la sección de formaciones del docente
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    // Agregar botón de nueva formación si no existe
+    const tbody = document.querySelector('#tabla-formaciones-docente tbody');
+    if (tbody) {
+        // Verificar si ya tiene la columna de acciones adicionales
+        const headers = document.querySelectorAll('#tabla-formaciones-docente th');
+        const tieneAcciones = Array.from(headers).some(th => 
+            th.textContent.includes('Acciones')
+        );
+        
+        if (!tieneAcciones) {
+            // Agregar columna de acciones
+            const headerRow = document.querySelector('#tabla-formaciones-docente thead tr');
+            if (headerRow) {
+                const thAcciones = document.createElement('th');
+                thAcciones.textContent = 'Acciones';
+                headerRow.appendChild(thAcciones);
+            }
+        }
+        
+        // Actualizar cada fila con botones de acción
+        const filas = tbody.querySelectorAll('tr');
+        filas.forEach(fila => {
+            // Verificar si ya tiene botones de acción
+            if (!fila.querySelector('.btn-sm')) {
+                const tdAcciones = document.createElement('td');
+                tdAcciones.innerHTML = `
+                    <button class="btn btn-sm btn-info" onclick="editarFormacionDesdeDocente(this)">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="verParticipantesFormacion(this)">
+                        <i class="fas fa-users"></i>
+                    </button>
+                `;
+                fila.appendChild(tdAcciones);
+            }
+        });
+    }
+}
+
+function cargarParticipantesDocenteConFuncionalidades() {
+    // Esta función se ejecuta cuando se carga la sección de participantes del docente
+    const tbody = document.querySelector('#tabla-participantes-docente tbody');
+    if (tbody) {
+        // Agregar botón para quitar de formación si no existe
+        const filas = tbody.querySelectorAll('tr');
+        filas.forEach(fila => {
+            const celdas = fila.querySelectorAll('td');
+            if (celdas.length >= 7) { // Ya tiene acciones
+                const ultimaCelda = celdas[celdas.length - 1];
+                if (!ultimaCelda.innerHTML.includes('fa-user-minus')) {
+                    // Agregar botón para quitar de formación
+                    ultimaCelda.innerHTML += `
+                        <button class="btn btn-sm btn-warning" onclick="quitarParticipanteDeFormacion(this)" title="Quitar de formación">
+                            <i class="fas fa-user-minus"></i>
+                        </button>
+                    `;
+                }
+            }
+        });
+    }
+}
+
+function editarFormacionDesdeDocente(button) {
+    const fila = button.closest('tr');
+    const formacionId = fila.cells[0].textContent.trim();
+    
+    // Buscar la formación completa
+    const formacion = datosSistema.formaciones.find(f => 
+        f.id.substring(0, 8) === formacionId || f.id === formacionId
+    );
+    
+    if (formacion) {
+        editarFormacion(formacion.id);
+    }
+}
+
+function verParticipantesFormacion(button) {
+    const fila = button.closest('tr');
+    const formacionId = fila.cells[0].textContent.trim();
+    const formacionNombre = fila.cells[2].textContent;
+    
+    // Buscar la formación completa
+    const formacion = datosSistema.formaciones.find(f => 
+        f.id.substring(0, 8) === formacionId || f.id === formacionId
+    );
+    
+    if (!formacion) return;
+    
+    // Crear modal para ver participantes de la formación
+    const modalId = 'modal-participantes-formacion';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3>Participantes de: ${formacionNombre}</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table id="tabla-participantes-formacion">
+                            <thead>
+                                <tr>
+                                    <th>Cédula</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Teléfono</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('${modalId}')">Cerrar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Llenar la tabla con participantes de esta formación
+    const tbody = modal.querySelector('#tabla-participantes-formacion tbody');
+    tbody.innerHTML = '';
+    
+    const participantesFormacion = datosSistema.participantes.filter(p => 
+        p.formacionesIds && p.formacionesIds.includes(formacion.id)
+    );
+    
+    if (participantesFormacion.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center">No hay participantes inscritos en esta formación</td>
+            </tr>
+        `;
+    } else {
+        participantesFormacion.forEach(participante => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${participante.cedula}</td>
+                <td>${participante.nombres} ${participante.apellidos}</td>
+                <td>${participante.email}</td>
+                <td>${participante.telefono}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="quitarParticipanteEspecifico('${participante.id}', '${formacion.id}')">
+                        <i class="fas fa-user-minus"></i> Quitar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    
+    modal.classList.add('active');
+}
+
+function quitarParticipanteDeFormacion(button) {
+    const fila = button.closest('tr');
+    const participanteId = fila.cells[0].textContent.trim();
+    
+    // Buscar participante completo
+    const participante = datosSistema.participantes.find(p => 
+        p.id.substring(0, 8) === participanteId || p.id === participanteId
+    );
+    
+    if (!participante || !participante.formacionesIds || participante.formacionesIds.length === 0) {
+        showAlert('Este participante no está inscrito en ninguna formación', 'warning');
+        return;
+    }
+    
+    // Mostrar modal para seleccionar qué formación quitar
+    const modalId = 'modal-quitar-formacion';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Quitar de Formación</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Seleccione la formación de la que desea quitar al participante:</p>
+                    <div id="lista-formaciones-participante"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('${modalId}')">Cancelar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Llenar lista de formaciones del participante
+    const listaDiv = modal.querySelector('#lista-formaciones-participante');
+    listaDiv.innerHTML = '';
+    
+    const formacionesParticipante = participante.formacionesIds.map(id => {
+        return datosSistema.formaciones.find(f => f.id === id);
+    }).filter(f => f);
+    
+    formacionesParticipante.forEach(formacion => {
+        const div = document.createElement('div');
+        div.className = 'card mb-2';
+        div.innerHTML = `
+            <div class="card-body">
+                <h5>${formacion.nombre}</h5>
+                <p><small>Código: ${formacion.codigo} | Modalidad: ${formacion.modalidad}</small></p>
+                <button class="btn btn-sm btn-danger" onclick="confirmarQuitarParticipante('${participante.id}', '${formacion.id}')">
+                    <i class="fas fa-sign-out-alt"></i> Quitar de esta formación
+                </button>
+            </div>
+        `;
+        listaDiv.appendChild(div);
+    });
+    
+    modal.classList.add('active');
+}
+
+function quitarParticipanteEspecifico(participanteId, formacionId) {
+    confirmarQuitarParticipante(participanteId, formacionId);
+}
+
+function confirmarQuitarParticipante(participanteId, formacionId) {
+    if (!confirm('¿Está seguro de quitar a este participante de la formación?')) return;
+    
+    const participanteIndex = datosSistema.participantes.findIndex(p => p.id === participanteId);
+    if (participanteIndex === -1) return;
+    
+    const formacionesIds = datosSistema.participantes[participanteIndex].formacionesIds || [];
+    const nuevaFormacionesIds = formacionesIds.filter(id => id !== formacionId);
+    
+    if (formacionesIds.length === nuevaFormacionesIds.length) {
+        showAlert('El participante no está inscrito en esta formación', 'warning');
+        return;
+    }
+    
+    datosSistema.participantes[participanteIndex].formacionesIds = nuevaFormacionesIds;
+    
+    // Aumentar vacantes
+    const formacionIndex = datosSistema.formaciones.findIndex(f => f.id === formacionId);
+    if (formacionIndex !== -1) {
+        datosSistema.formaciones[formacionIndex].vacantes += 1;
+    }
+    
+    guardarDatos();
+    closeModal('modal-quitar-formacion');
+    closeModal('modal-participantes-formacion');
+    
+    // Actualizar la vista del docente
+    if (currentRole === 'docente') {
+        cargarSeccionDocente('participantes-docente');
+        cargarSeccionDocente('formaciones-docente');
+    }
+    
+    showAlert('Participante quitado de la formación exitosamente', 'success');
+}
+
+// ===== AGREGAR FUNCIONALIDAD AL LOGIN EXISTENTE =====
+// Modificar el formulario de login para agregar opción de crear cuenta
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        // Agregar enlace para crear cuenta
+        const loginFooter = loginForm.querySelector('.login-footer');
+        if (loginFooter) {
+            const createAccountLink = document.createElement('p');
+            createAccountLink.innerHTML = `
+                <a href="#" id="link-crear-cuenta" style="color: #3498db; text-decoration: none; font-weight: 600;">
+                    <i class="fas fa-user-plus"></i> ¿No tiene cuenta? Crear una ahora
+                </a>
+            `;
+            loginFooter.insertBefore(createAccountLink, loginFooter.firstChild);
+            
+            // Evento para el enlace
+            document.getElementById('link-crear-cuenta').addEventListener('click', function(e) {
+                e.preventDefault();
+                // Ocultar login y mostrar página de bienvenida
+                document.getElementById('login-container').style.display = 'none';
+                crearPaginaBienvenida();
+            });
+        }
+    }
+});
+
+// ===== INICIALIZAR FUNCIONALIDADES =====
+// Sobrescribir la función inicializarEventos para agregar nuevos eventos
+const inicializarEventosOriginal = window.inicializarEventos;
+window.inicializarEventos = function() {
+    if (inicializarEventosOriginal) {
+        inicializarEventosOriginal();
+    }
+    
+    // Agregar eventos adicionales
+    agregarEventosAdicionales();
+};
+
+function agregarEventosAdicionales() {
+    // Eventos específicos para docentes
+    if (currentRole === 'docente') {
+        // Agregar funcionalidades al dashboard del docente
+        setTimeout(() => {
+            modificarDashboardDocente();
+        }, 500);
+    }
+}
+
+// ===== ESTILOS ADICIONALES =====
+const estilosAdicionales = document.createElement('style');
+estilosAdicionales.textContent = `
+    /* Animaciones */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Estilos para la página de bienvenida */
+    #welcome-container {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .btn-account-type:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Estilos para los nuevos modales */
+    .modal .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    /* Botones especiales para docentes */
+    #btn-nueva-formacion, #btn-agregar-participante {
+        margin-left: 10px;
+    }
+    
+    /* Estilos para la tabla de participantes */
+    #tabla-participantes-formacion td, #tabla-participantes-formacion th {
+        padding: 10px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        #welcome-container .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .btn-account-type {
+            padding: 12px;
+        }
+    }
+`;
+document.head.appendChild(estilosAdicionales);
+</script>
 </body>
 </html>
