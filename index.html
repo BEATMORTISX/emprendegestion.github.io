@@ -6841,5 +6841,987 @@ estiloOcultarBotones.textContent = `
 `;
 document.head.appendChild(estiloOcultarBotones);
 </script>
+    <script>
+// ===== CONFIGURACIÓN DE PÁGINA DE BIENVENIDA - VERSIÓN CORREGIDA =====
+
+// Guardar las funciones originales antes de sobreescribirlas
+const originalDOMContentLoaded = window.onDOMContentLoaded || function() {};
+
+// Sobrescribir el DOMContentLoaded del sistema original
+document.addEventListener('DOMContentLoaded', function() {
+    // Primero cargar el sistema como normalmente lo haría
+    cargarDatos();
+    inicializarEventos();
+    configurarModoConexion();
+    cargarTemaGuardado();
+    
+    // Luego verificar si mostrar la página de bienvenida
+    setTimeout(() => {
+        mostrarPaginaBienvenidaSiEsNecesario();
+    }, 500);
+});
+
+function mostrarPaginaBienvenidaSiEsNecesario() {
+    // Verificar si ya hay usuarios en el sistema
+    const tieneUsuarios = datosSistema.usuarios && datosSistema.usuarios.length > 0;
+    
+    // Mostrar página de bienvenida solo si no hay usuarios
+    if (!tieneUsuarios) {
+        crearPaginaBienvenida();
+    }
+}
+
+function crearPaginaBienvenida() {
+    // Ocultar temporalmente el login
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) {
+        loginContainer.style.display = 'none';
+    }
+    
+    // Crear contenedor de bienvenida
+    const welcomeContainer = document.createElement('div');
+    welcomeContainer.id = 'welcome-container';
+    welcomeContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1a1a1a, #2c3e50);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    `;
+    
+    // Crear tarjeta de bienvenida
+    const welcomeCard = document.createElement('div');
+    welcomeCard.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 800px;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    `;
+    
+    // Contenido de la tarjeta de bienvenida
+    welcomeCard.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; padding: 3rem; text-align: center;">
+            <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 3rem; border: 3px solid rgba(255,255,255,0.3);">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Complejo Virtual EPE</h1>
+            <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; display: inline-block; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                <i class="fas fa-cogs"></i> SISTEMA CRM EDUCATIVO 4.0
+            </div>
+            <p style="opacity: 0.9; max-width: 600px; margin: 0 auto;">Sistema integral de gestión educativa para planteles, directores, docentes y participantes</p>
+        </div>
+        
+        <div style="padding: 2.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: #f8f9fa;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Gestión de Planteles</h3>
+                    <p style="color: #666;">Administre múltiples planteles educativos</p>
+                </div>
+                
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: #f8f9fa;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Panel Docente</h3>
+                    <p style="color: #666;">Gestión completa de formaciones y participantes</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <h3 style="margin-bottom: 1.5rem; color: #2c3e50;">Bienvenido al Sistema</h3>
+                
+                <div style="margin-bottom: 2rem;">
+                    <p style="color: #666; margin-bottom: 1rem;">Se detectó que es la primera vez que usa el sistema.</p>
+                    
+                    <div style="display: inline-block; text-align: left; background: #e8f4fc; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #3498db;">
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">
+                            <i class="fas fa-key"></i> Credenciales por defecto:
+                        </h4>
+                        <p style="margin: 0.5rem 0;">
+                            <strong>Usuario:</strong> pabloemiliorico24@gmail.com
+                        </p>
+                        <p style="margin: 0.5rem 0;">
+                            <strong>Contraseña:</strong> Perp.241
+                        </p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9em; color: #666;">
+                            <i class="fas fa-info-circle"></i> Estas credenciales le darán acceso como Administrador
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;">
+                    <button id="btn-usar-credenciales" style="padding: 12px 30px; background: linear-gradient(135deg, #1a1a1a, #2c3e50); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-sign-in-alt"></i> Usar Credenciales por Defecto
+                    </button>
+                    
+                    <button id="btn-configurar-manual" style="padding: 12px 30px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-user-cog"></i> Configurar Manualmente
+                    </button>
+                </div>
+                
+                <div id="configurar-manual-options" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; animation: fadeIn 0.5s;">
+                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">Seleccione el tipo de cuenta inicial:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <button class="btn-account-type" data-type="admin" style="padding: 15px; border: 2px solid #3498db; border-radius: 8px; background: #e8f4fc; cursor: pointer; transition: all 0.3s;">
+                            <div style="font-size: 1.2rem; color: #1a1a1a; margin-bottom: 0.5rem;">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div style="font-weight: 600; color: #1a1a1a;">Administrador</div>
+                            <small style="color: #666; display: block; margin-top: 0.5rem;">Acceso completo al sistema</small>
+                        </button>
+                    </div>
+                    
+                    <div id="account-type-details" style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 8px; border: 1px solid #ddd;">
+                        <form id="form-create-account">
+                            <div style="margin-bottom: 1rem;">
+                                <h5 style="color: #2c3e50; margin-bottom: 1rem;">Datos del Administrador</h5>
+                                <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">
+                                    <i class="fas fa-info-circle"></i> Esta será la cuenta principal con acceso a todas las funciones del sistema.
+                                </p>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Nombre Completo *</label>
+                                    <input type="text" id="new-account-name" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" 
+                                           value="Administrador Principal" required>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Email *</label>
+                                    <input type="email" id="new-account-email" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" 
+                                           value="admin@complejovirtualepe.edu.ve" required>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Usuario *</label>
+                                    <input type="text" id="new-account-username" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" 
+                                           value="admin" required>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Contraseña *</label>
+                                    <input type="password" id="new-account-password" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" 
+                                           value="Admin2024!" required>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                                <button type="button" id="btn-cancel-create" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                                <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 6px; cursor: pointer;">Crear Cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                    <p style="color: #666; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Versión 4.0.0 | © 2024 Complejo Virtual EPE
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    welcomeContainer.appendChild(welcomeCard);
+    document.body.appendChild(welcomeContainer);
+    
+    // Agregar estilos para animaciones
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .btn-account-type:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Eventos para los botones de la página de bienvenida
+    document.getElementById('btn-usar-credenciales').addEventListener('click', function() {
+        // Usar credenciales por defecto
+        usarCredencialesPorDefecto();
+    });
+    
+    document.getElementById('btn-configurar-manual').addEventListener('click', function() {
+        const optionsDiv = document.getElementById('configurar-manual-options');
+        optionsDiv.style.display = 'block';
+        this.style.display = 'none';
+        document.getElementById('btn-usar-credenciales').style.display = 'none';
+    });
+    
+    document.getElementById('btn-cancel-create').addEventListener('click', function() {
+        document.getElementById('configurar-manual-options').style.display = 'none';
+        document.getElementById('btn-configurar-manual').style.display = 'inline-flex';
+        document.getElementById('btn-usar-credenciales').style.display = 'inline-flex';
+    });
+    
+    // Evento para enviar formulario de creación de cuenta
+    document.getElementById('form-create-account').addEventListener('submit', function(e) {
+        e.preventDefault();
+        crearCuentaAdminManual();
+    });
+}
+
+function usarCredencialesPorDefecto() {
+    // Crear usuario administrador por defecto si no existe
+    if (!datosSistema.usuarios || datosSistema.usuarios.length === 0) {
+        datosSistema.usuarios = [{
+            id: generarCodigoUnico(),
+            username: 'pabloemiliorico24@gmail.com',
+            password: 'Perp.241',
+            email: 'pabloemiliorico24@gmail.com',
+            nombre: 'Administrador Principal',
+            rol: 'admin',
+            entidadId: null,
+            estado: 'activo',
+            ultimoAcceso: null
+        }];
+        guardarDatos();
+    }
+    
+    // Ocultar página de bienvenida
+    const welcomeContainer = document.getElementById('welcome-container');
+    if (welcomeContainer) {
+        welcomeContainer.remove();
+    }
+    
+    // Mostrar login con credenciales pre-llenadas
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) {
+        loginContainer.style.display = 'flex';
+        document.getElementById('username').value = 'pabloemiliorico24@gmail.com';
+        document.getElementById('password').value = 'Perp.241';
+        
+        // Mostrar mensaje
+        setTimeout(() => {
+            showAlert('Use las credenciales por defecto para iniciar sesión', 'info');
+        }, 300);
+    }
+}
+
+function crearCuentaAdminManual() {
+    const name = document.getElementById('new-account-name').value;
+    const email = document.getElementById('new-account-email').value;
+    const username = document.getElementById('new-account-username').value;
+    const password = document.getElementById('new-account-password').value;
+    
+    // Validar campos
+    if (!name || !email || !username || !password) {
+        alert('Por favor, complete todos los campos');
+        return;
+    }
+    
+    // Crear usuario administrador
+    datosSistema.usuarios = [{
+        id: generarCodigoUnico(),
+        username: username,
+        password: password,
+        email: email,
+        nombre: name,
+        rol: 'admin',
+        entidadId: null,
+        estado: 'activo',
+        ultimoAcceso: null
+    }];
+    
+    // Guardar datos
+    guardarDatos();
+    
+    // Ocultar página de bienvenida
+    const welcomeContainer = document.getElementById('welcome-container');
+    if (welcomeContainer) {
+        welcomeContainer.remove();
+    }
+    
+    // Mostrar login con datos pre-llenados
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) {
+        loginContainer.style.display = 'flex';
+        document.getElementById('username').value = username;
+        document.getElementById('password').value = password;
+        
+        // Mostrar mensaje
+        setTimeout(() => {
+            showAlert('Cuenta de administrador creada exitosamente', 'success');
+        }, 300);
+    }
+}
+
+// ===== FUNCIONALIDADES PARA DOCENTES - VERSIÓN SIMPLIFICADA =====
+
+// Función para agregar formaciones desde el panel docente
+function habilitarFormacionesParaDocentes() {
+    if (currentRole !== 'docente') return;
+    
+    // Agregar botón en el panel de docentes si no existe
+    const seccionFormaciones = document.getElementById('section-formaciones-docente');
+    if (seccionFormaciones) {
+        const cardHeader = seccionFormaciones.querySelector('.card-header');
+        if (cardHeader && !cardHeader.querySelector('#btn-nueva-formacion-docente')) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-nueva-formacion-docente';
+            btn.className = 'btn btn-primary';
+            btn.innerHTML = '<i class="fas fa-plus"></i> Nueva Formación';
+            btn.onclick = abrirModalNuevaFormacionDocente;
+            cardHeader.appendChild(btn);
+        }
+    }
+    
+    // Agregar botón para buscar participantes por cédula
+    const seccionParticipantes = document.getElementById('section-participantes-docente');
+    if (seccionParticipantes) {
+        const cardHeader = seccionParticipantes.querySelector('.card-header');
+        if (cardHeader && !cardHeader.querySelector('#btn-buscar-participante')) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-buscar-participante';
+            btn.className = 'btn btn-primary';
+            btn.innerHTML = '<i class="fas fa-search"></i> Buscar por Cédula';
+            btn.onclick = abrirModalBuscarParticipanteCedula;
+            cardHeader.appendChild(btn);
+        }
+    }
+}
+
+// Modal para nueva formación (docente)
+function abrirModalNuevaFormacionDocente() {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    const docente = datosSistema.docentes.find(d => d.id === docenteId);
+    if (!docente) return;
+    
+    // Usar el modal existente de formaciones
+    openModal('modal-formacion');
+    
+    // Pre-llenar campos específicos para docentes
+    setTimeout(() => {
+        const plantelSelect = document.getElementById('formacion-plantel');
+        const docenteSelect = document.getElementById('formacion-docente');
+        
+        if (plantelSelect && docente.plantelId) {
+            plantelSelect.value = docente.plantelId;
+            plantelSelect.disabled = true;
+            
+            // Cargar docentes de ese plantel
+            if (docenteSelect) {
+                docenteSelect.innerHTML = '<option value="">Seleccionar Docente</option>';
+                const docentesPlantel = datosSistema.docentes.filter(d => d.plantelId === docente.plantelId);
+                docentesPlantel.forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d.id;
+                    option.textContent = `${d.nombres} ${d.apellidos}`;
+                    if (d.id === docenteId) {
+                        option.selected = true;
+                    }
+                    docenteSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Generar código automático
+        const codigoInput = document.getElementById('formacion-codigo');
+        if (codigoInput && !codigoInput.value) {
+            const fecha = new Date();
+            const codigo = `FOR-${fecha.getFullYear()}${(fecha.getMonth()+1).toString().padStart(2,'0')}-${Math.floor(Math.random()*900)+100}`;
+            codigoInput.value = codigo;
+        }
+    }, 100);
+}
+
+// Modal para buscar participante por cédula
+function abrirModalBuscarParticipanteCedula() {
+    // Crear modal simple
+    const modalId = 'modal-buscar-cedula';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Buscar Participante</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Ingrese la cédula del participante:</label>
+                        <input type="text" id="input-cedula-buscar" class="form-control" 
+                               placeholder="Ej: V-12345678">
+                    </div>
+                    
+                    <div id="resultado-busqueda-cedula" class="mb-3" style="display: none;"></div>
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-info w-50" onclick="buscarParticipanteCedula()">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button class="btn btn-secondary w-50" onclick="closeModal('${modalId}')">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Limpiar búsqueda anterior
+    document.getElementById('input-cedula-buscar').value = '';
+    document.getElementById('resultado-busqueda-cedula').style.display = 'none';
+    document.getElementById('resultado-busqueda-cedula').innerHTML = '';
+    
+    modal.classList.add('active');
+}
+
+function buscarParticipanteCedula() {
+    const cedula = document.getElementById('input-cedula-buscar').value.trim();
+    if (!cedula) {
+        showAlert('Ingrese una cédula para buscar', 'warning');
+        return;
+    }
+    
+    // Buscar participante
+    const participante = datosSistema.participantes.find(p => 
+        p.cedula.toLowerCase() === cedula.toLowerCase()
+    );
+    
+    const resultadoDiv = document.getElementById('resultado-busqueda-cedula');
+    
+    if (participante) {
+        // Mostrar información del participante
+        const plantel = datosSistema.planteles.find(p => p.id === participante.plantelId);
+        resultadoDiv.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5>Participante Encontrado</h5>
+                    <p><strong>Nombre:</strong> ${participante.nombres} ${participante.apellidos}</p>
+                    <p><strong>Cédula:</strong> ${participante.cedula}</p>
+                    <p><strong>Email:</strong> ${participante.email}</p>
+                    <p><strong>Plantel:</strong> ${plantel ? plantel.nombre : 'No asignado'}</p>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-primary btn-sm" onclick="agregarParticipanteAFormacionDocente('${participante.id}')">
+                            <i class="fas fa-user-plus"></i> Agregar a una formación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        resultadoDiv.style.display = 'block';
+    } else {
+        resultadoDiv.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> No se encontró ningún participante con esa cédula.
+            </div>
+        `;
+        resultadoDiv.style.display = 'block';
+    }
+}
+
+function agregarParticipanteAFormacionDocente(participanteId) {
+    const docenteId = currentUser?.entidadId;
+    if (!docenteId) return;
+    
+    // Obtener formaciones del docente con vacantes
+    const formacionesDocente = datosSistema.formaciones.filter(f => 
+        f.docenteId === docenteId && 
+        f.vacantes > 0
+    );
+    
+    if (formacionesDocente.length === 0) {
+        showAlert('No tiene formaciones con vacantes disponibles', 'warning');
+        return;
+    }
+    
+    // Crear modal para seleccionar formación
+    const modalId = 'modal-seleccionar-formacion';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Seleccionar Formación</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Seleccione la formación:</label>
+                        <select id="select-formacion-agregar" class="form-control">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-success w-100" onclick="confirmarAgregarParticipante('${participanteId}')">
+                            <i class="fas fa-check"></i> Agregar a la formación seleccionada
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Llenar select con formaciones
+    const select = document.getElementById('select-formacion-agregar');
+    select.innerHTML = '<option value="">Seleccionar...</option>';
+    
+    formacionesDocente.forEach(formacion => {
+        const option = document.createElement('option');
+        option.value = formacion.id;
+        option.textContent = `${formacion.codigo} - ${formacion.nombre} (${formacion.vacantes} vacantes)`;
+        select.appendChild(option);
+    });
+    
+    // Cerrar modal anterior y abrir nuevo
+    closeModal('modal-buscar-cedula');
+    modal.classList.add('active');
+}
+
+function confirmarAgregarParticipante(participanteId) {
+    const formacionId = document.getElementById('select-formacion-agregar').value;
+    if (!formacionId) {
+        showAlert('Seleccione una formación', 'warning');
+        return;
+    }
+    
+    const participanteIndex = datosSistema.participantes.findIndex(p => p.id === participanteId);
+    if (participanteIndex === -1) return;
+    
+    const formacion = datosSistema.formaciones.find(f => f.id === formacionId);
+    if (!formacion || formacion.vacantes <= 0) {
+        showAlert('No hay vacantes disponibles en esta formación', 'error');
+        return;
+    }
+    
+    // Verificar si ya está inscrito
+    const formacionesIds = datosSistema.participantes[participanteIndex].formacionesIds || [];
+    if (formacionesIds.includes(formacionId)) {
+        showAlert('El participante ya está inscrito en esta formación', 'warning');
+        return;
+    }
+    
+    // Agregar formación
+    formacionesIds.push(formacionId);
+    datosSistema.participantes[participanteIndex].formacionesIds = formacionesIds;
+    
+    // Reducir vacantes
+    const formacionIndex = datosSistema.formaciones.findIndex(f => f.id === formacionId);
+    datosSistema.formaciones[formacionIndex].vacantes -= 1;
+    
+    guardarDatos();
+    
+    // Cerrar modales
+    closeModal('modal-seleccionar-formacion');
+    
+    // Actualizar vista
+    if (currentRole === 'docente') {
+        cargarSeccionDocente('participantes-docente');
+    }
+    
+    showAlert('Participante agregado exitosamente a la formación', 'success');
+}
+
+// ===== INTEGRACIÓN CON EL SISTEMA EXISTENTE =====
+
+// Sobrescribir la función de cargar sección docente para agregar funcionalidades
+const originalCargarSeccionDocente = window.cargarSeccionDocente;
+window.cargarSeccionDocente = function(sectionId) {
+    // Ejecutar función original
+    if (originalCargarSeccionDocente) {
+        originalCargarSeccionDocente(sectionId);
+    }
+    
+    // Agregar funcionalidades para docentes
+    if (currentRole === 'docente') {
+        setTimeout(() => {
+            habilitarFormacionesParaDocentes();
+        }, 300);
+    }
+};
+
+// ===== AGREGAR OPCIÓN DE CREAR CUENTA EN EL LOGIN =====
+
+// Modificar el formulario de login para agregar enlace de crear cuenta
+function agregarOpcionCrearCuenta() {
+    const loginForm = document.getElementById('login-form');
+    if (!loginForm) return;
+    
+    // Buscar el footer del login
+    const loginFooter = loginForm.querySelector('.login-footer');
+    if (loginFooter) {
+        // Verificar si ya existe el enlace
+        if (!loginFooter.querySelector('#link-crear-cuenta-login')) {
+            const crearCuentaDiv = document.createElement('div');
+            crearCuentaDiv.style.marginTop = '1rem';
+            crearCuentaDiv.style.paddingTop = '1rem';
+            crearCuentaDiv.style.borderTop = '1px solid rgba(255,255,255,0.2)';
+            crearCuentaDiv.innerHTML = `
+                <p style="text-align: center; margin-bottom: 0.5rem;">
+                    <a href="#" id="link-crear-cuenta-login" 
+                       style="color: white; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-user-plus"></i> ¿No tiene cuenta? Crear una ahora
+                    </a>
+                </p>
+                <p style="text-align: center; font-size: 0.8rem; opacity: 0.8;">
+                    <i class="fas fa-info-circle"></i> Solo disponible para administradores
+                </p>
+            `;
+            loginFooter.appendChild(crearCuentaDiv);
+            
+            // Agregar evento
+            document.getElementById('link-crear-cuenta-login').addEventListener('click', function(e) {
+                e.preventDefault();
+                mostrarModalCrearCuentaDesdeLogin();
+            });
+        }
+    }
+}
+
+function mostrarModalCrearCuentaDesdeLogin() {
+    // Solo permitir si es administrador o si no hay usuarios
+    const esAdmin = currentRole === 'admin';
+    const noHayUsuarios = datosSistema.usuarios.length === 0;
+    
+    if (!esAdmin && !noHayUsuarios) {
+        showAlert('Solo los administradores pueden crear nuevas cuentas', 'warning');
+        return;
+    }
+    
+    // Crear modal para crear cuenta
+    const modalId = 'modal-crear-cuenta-admin';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h3>Crear Nueva Cuenta</h3>
+                    <button class="close-modal" onclick="closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Tipo de Cuenta *</label>
+                            <select id="tipo-cuenta-nueva" class="form-control" onchange="cambiarTipoCuenta()">
+                                <option value="">Seleccionar tipo</option>
+                                <option value="admin">Administrador</option>
+                                <option value="plantel">Plantel</option>
+                                <option value="director">Director</option>
+                                <option value="docente">Docente</option>
+                                <option value="participante">Participante</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Nombre Completo *</label>
+                            <input type="text" id="nombre-cuenta-nueva" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="email-cuenta-nueva" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Usuario *</label>
+                            <input type="text" id="usuario-cuenta-nueva" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Contraseña *</label>
+                            <input type="password" id="password-cuenta-nueva" class="form-control" required>
+                        </div>
+                        
+                        <div id="campos-adicionales-cuenta">
+                            <!-- Campos adicionales según el tipo de cuenta -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('${modalId}')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="crearCuentaDesdeModal()">Crear Cuenta</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Limpiar campos
+    document.getElementById('tipo-cuenta-nueva').value = '';
+    document.getElementById('nombre-cuenta-nueva').value = '';
+    document.getElementById('email-cuenta-nueva').value = '';
+    document.getElementById('usuario-cuenta-nueva').value = '';
+    document.getElementById('password-cuenta-nueva').value = '';
+    document.getElementById('campos-adicionales-cuenta').innerHTML = '';
+    
+    modal.classList.add('active');
+}
+
+function cambiarTipoCuenta() {
+    const tipo = document.getElementById('tipo-cuenta-nueva').value;
+    const camposDiv = document.getElementById('campos-adicionales-cuenta');
+    
+    camposDiv.innerHTML = '';
+    
+    switch(tipo) {
+        case 'plantel':
+            camposDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Nombre del Plantel *</label>
+                    <input type="text" id="nombre-plantel" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Código Dependencia *</label>
+                    <input type="text" id="codigo-plantel" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Ciudad *</label>
+                    <input type="text" id="ciudad-plantel" class="form-control" required>
+                </div>
+            `;
+            break;
+            
+        case 'director':
+        case 'docente':
+        case 'participante':
+            camposDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Cédula *</label>
+                    <input type="text" id="cedula-persona" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono *</label>
+                    <input type="tel" id="telefono-persona" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Plantel *</label>
+                    <select id="plantel-persona" class="form-control" required>
+                        <option value="">Seleccionar plantel</option>
+                    </select>
+                </div>
+            `;
+            
+            // Llenar planteles
+            setTimeout(() => {
+                const select = document.getElementById('plantel-persona');
+                select.innerHTML = '<option value="">Seleccionar plantel</option>';
+                datosSistema.planteles.forEach(plantel => {
+                    const option = document.createElement('option');
+                    option.value = plantel.id;
+                    option.textContent = plantel.nombre;
+                    select.appendChild(option);
+                });
+            }, 100);
+            break;
+    }
+}
+
+function crearCuentaDesdeModal() {
+    const tipo = document.getElementById('tipo-cuenta-nueva').value;
+    const nombre = document.getElementById('nombre-cuenta-nueva').value;
+    const email = document.getElementById('email-cuenta-nueva').value;
+    const usuario = document.getElementById('usuario-cuenta-nueva').value;
+    const password = document.getElementById('password-cuenta-nueva').value;
+    
+    if (!tipo || !nombre || !email || !usuario || !password) {
+        showAlert('Complete todos los campos obligatorios', 'error');
+        return;
+    }
+    
+    // Verificar si el usuario ya existe
+    const usuarioExistente = datosSistema.usuarios.find(u => 
+        u.username === usuario || u.email === email
+    );
+    
+    if (usuarioExistente) {
+        showAlert('El usuario o email ya está registrado', 'error');
+        return;
+    }
+    
+    let nuevaEntidadId = null;
+    let nombreCompleto = nombre;
+    
+    // Crear entidad según el tipo
+    switch(tipo) {
+        case 'admin':
+            // No necesita entidad adicional
+            break;
+            
+        case 'plantel':
+            const nombrePlantel = document.getElementById('nombre-plantel').value;
+            const codigoPlantel = document.getElementById('codigo-plantel').value;
+            const ciudadPlantel = document.getElementById('ciudad-plantel').value;
+            
+            if (!nombrePlantel || !codigoPlantel || !ciudadPlantel) {
+                showAlert('Complete todos los campos del plantel', 'error');
+                return;
+            }
+            
+            const plantelId = generarCodigoUnico();
+            datosSistema.planteles.push({
+                id: plantelId,
+                codigoDependencia: codigoPlantel,
+                codigoPlantel: 'PVE-' + codigoPlantel,
+                nombre: nombrePlantel,
+                direccion: 'Por definir',
+                ciudad: ciudadPlantel,
+                telefono: '',
+                email: email,
+                estado: 'activo'
+            });
+            
+            nuevaEntidadId = plantelId;
+            nombreCompleto = nombrePlantel;
+            break;
+            
+        case 'director':
+        case 'docente':
+        case 'participante':
+            const cedula = document.getElementById('cedula-persona').value;
+            const telefono = document.getElementById('telefono-persona').value;
+            const plantelIdPersona = document.getElementById('plantel-persona').value;
+            
+            if (!cedula || !telefono || !plantelIdPersona) {
+                showAlert('Complete todos los campos de la persona', 'error');
+                return;
+            }
+            
+            const entidadId = generarCodigoUnico();
+            const nombres = nombre.split(' ')[0];
+            const apellidos = nombre.split(' ').slice(1).join(' ') || 'Apellido';
+            
+            if (tipo === 'director') {
+                datosSistema.directores.push({
+                    id: entidadId,
+                    cedula: cedula,
+                    nombres: nombres,
+                    apellidos: apellidos,
+                    telefono: telefono,
+                    email: email,
+                    plantelId: plantelIdPersona,
+                    estado: 'activo'
+                });
+            } else if (tipo === 'docente') {
+                datosSistema.docentes.push({
+                    id: entidadId,
+                    cedula: cedula,
+                    nombres: nombres,
+                    apellidos: apellidos,
+                    especialidad: 'Por definir',
+                    telefono: telefono,
+                    email: email,
+                    plantelId: plantelIdPersona,
+                    estado: 'activo'
+                });
+            } else {
+                datosSistema.participantes.push({
+                    id: entidadId,
+                    cedula: cedula,
+                    nombres: nombres,
+                    apellidos: apellidos,
+                    telefono: telefono,
+                    email: email,
+                    edad: 25,
+                    sexo: 'masculino',
+                    fechaNacimiento: '1990-01-01',
+                    lugarNacimiento: 'Por definir',
+                    parroquia: 'Por definir',
+                    direccion: 'Por definir',
+                    discapacidad: 'no',
+                    discapacidadDetalle: '',
+                    plantelId: plantelIdPersona,
+                    docenteId: null,
+                    formacionesIds: [],
+                    estado: 'activo'
+                });
+            }
+            
+            nuevaEntidadId = entidadId;
+            break;
+    }
+    
+    // Crear usuario
+    const usuarioId = generarCodigoUnico();
+    datosSistema.usuarios.push({
+        id: usuarioId,
+        username: usuario,
+        password: password,
+        email: email,
+        nombre: tipo === 'plantel' ? nombreCompleto : nombre,
+        rol: tipo,
+        entidadId: nuevaEntidadId,
+        estado: 'activo',
+        ultimoAcceso: null
+    });
+    
+    guardarDatos();
+    closeModal('modal-crear-cuenta-admin');
+    showAlert('Cuenta creada exitosamente', 'success');
+    
+    // Si estamos en el panel de admin, actualizar la lista de usuarios
+    if (currentRole === 'admin') {
+        cargarUsuarios();
+    }
+}
+
+// ===== INICIALIZAR FUNCIONALIDADES ADICIONALES =====
+
+// Agregar la opción de crear cuenta al login después de que se cargue
+setTimeout(() => {
+    agregarOpcionCrearCuenta();
+}, 1000);
+
+// Sobrescribir la función mostrarDashboard para habilitar funcionalidades docentes
+const originalMostrarDashboard = window.mostrarDashboard;
+window.mostrarDashboard = function(role, usuario) {
+    if (originalMostrarDashboard) {
+        originalMostrarDashboard(role, usuario);
+    }
+    
+    // Habilitar funcionalidades para docentes
+    if (role === 'docente') {
+        setTimeout(() => {
+            habilitarFormacionesParaDocentes();
+        }, 500);
+    }
+};
+</script>
 </body>
 </html>
